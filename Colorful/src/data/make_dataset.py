@@ -4,7 +4,10 @@ import h5py
 import parmap
 import argparse
 import numpy as np
-import cPickle as pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 from skimage import color
 from tqdm import tqdm as tqdm
 import sklearn.neighbors as nn
@@ -52,7 +55,7 @@ def build_HDF5(size=64):
             img = celeb[0]
             attrs = int(celeb[1])
             d_partition[img] = attrs
-    with open(os.path.join(data_dir, "d_partition.pickle"), "w") as fd:
+    with open(os.path.join(data_dir, "d_partition.pickle"), "wb") as fd:
         pickle.dump(d_partition, fd)
 
     # Put train data in HDF5
@@ -90,7 +93,7 @@ def build_HDF5(size=64):
             for chunk_idx in tqdm(arr_chunks):
 
                 list_img_path = list_img[chunk_idx].tolist()
-                output = parmap.map(format_image, list_img_path, size, parallel=True)
+                output = parmap.map(format_image, list_img_path, size, pm_parallel=True)
 
                 arr_img_color = np.vstack([o[0] for o in output if o[0].shape[0] > 0])
                 arr_img_lab = np.vstack([o[1] for o in output if o[0].shape[0] > 0])
